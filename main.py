@@ -84,10 +84,6 @@ class MainPage(tk.Frame):
             ).pack()
             r += 1
         
-        
-        generate_button = tk.Button(right_frame,text="Generate Email", command= lambda: generate_email(email_type_var))
-        generate_button.pack()
-        
         #Names input, specified by characters
         nlabel = tk.Label(left_frame, text="Put Names in here")
         nlabel.pack()
@@ -109,17 +105,60 @@ class MainPage(tk.Frame):
         label = tk.Label(right_frame, text="Result Email")
         label.pack()
         
-        emailBox = tk.Text(right_frame, height=20, width=30)
-        emailBox.pack()
+        messageSpace = tk.Text(right_frame, height=20, width=30)
+        messageSpace.pack()
+        
+        #generate email button
+        generate_button = tk.Button(right_frame,text="Generate Email", command= lambda: generate_email(email_type_var,messageSpace,emailsBox))
+        generate_button.pack()
+        
 
 #logic that will help put names into the email
-def generate_email(email_type_var):
+def generate_email(email_type_var, message_space, emails_box):
     global stored_names
     if stored_names is None:
         count_issue()
         return -1
-    
-    print(f"Selected email type: {email_type_var.get()}")
+    names_list = list(stored_names.items())
+    print(names_list)
+    print(f"Selected email type: {email_type_var.get()} {type(email_type_var.get())}")
+    generated_email=f""
+    recipients = ""
+    #This logic will split into 4 parts, based on what email template you want.
+    match email_type_var.get():
+        case "1":
+            email_template = open("MONTHLYSHIFTSIGNUP")
+            month="Define later"
+            date="Define later"
+            date2="Need to make input for date"
+            for line in email_template:
+                generated_email+=line
+            email_template.close()
+        case "2":
+            email_template = open("WEEKLYSHIFTREMINDER")
+            date="define later"
+            for line in email_template:
+                generated_email+=line
+            email_template.close()
+        case "3":
+            email_template = open("WEEKLYSHIFTREMINDERINPERSON")
+            date="define later"
+            for line in email_template:
+                generated_email+=line
+            email_template.close()
+        case "4":
+            print("here")
+            email_template = open("TEMPREMINDER")
+            for line in email_template:
+                generated_email+=line
+            email_template.close()
+            kv = names_list[0]
+            key,value = kv
+            Name = key
+            recipients += value
+            generated_email = generated_email.format(Name=Name)
+    message_space.insert('1.0',generated_email)
+    emails_box.insert('1.0',recipients)
 
 def get_names_from_list(nameBox):
     input_val = nameBox.get("1.0", 'end-1c').lower()
