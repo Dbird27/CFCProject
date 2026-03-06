@@ -94,6 +94,10 @@ class MainPage(tk.Frame):
         commitNames = tk.Button(left_frame,text="Enter Names", command=lambda: get_names_from_list(nameBox))
         commitNames.pack()
         
+        #Select many names
+        selectAll = tk.Button(left_frame, text="Send to All", command=lambda: get_all_names())
+        selectAll.pack()
+        
         #recipients box
         label = tk.Label(right_frame, text="Recipients")
         label.pack()
@@ -115,6 +119,9 @@ class MainPage(tk.Frame):
 
 #logic that will help put names into the email
 def generate_email(email_type_var, message_space, emails_box):
+    #clear them out to be safe
+    message_space.delete("1.0", tk.END)
+    emails_box.delete("1.0",tk.END)
     global stored_names
     if stored_names is None:
         count_issue()
@@ -125,6 +132,7 @@ def generate_email(email_type_var, message_space, emails_box):
     generated_email=f""
     recipients = ""
     #This logic will split into 4 parts, based on what email template you want.
+    #Deputy in constant
     match email_type_var.get():
         case "1":
             email_template = open("MONTHLYSHIFTSIGNUP")
@@ -147,7 +155,6 @@ def generate_email(email_type_var, message_space, emails_box):
                 generated_email+=line
             email_template.close()
         case "4":
-            print("here")
             email_template = open("TEMPREMINDER")
             for line in email_template:
                 generated_email+=line
@@ -155,8 +162,11 @@ def generate_email(email_type_var, message_space, emails_box):
             kv = names_list[0]
             key,value = kv
             Name = key
-            recipients += value
             generated_email = generated_email.format(Name=Name)
+    #setups recipients
+    for name,email in names_list:
+        recipients += f"{email},"
+        recipients.format(email=email)
     message_space.insert('1.0',generated_email)
     emails_box.insert('1.0',recipients)
 
@@ -185,6 +195,24 @@ def get_names_from_list(nameBox):
         length_issue(names)
     set_names(name_to_email)
     return name_to_email
+
+def get_all_names():
+    name_to_email={}
+    workbook = load_workbook(filename=file_path) #Change later to an actual document, up at the top
+    ws = workbook.active
+    skipCount = 2
+    iter=0
+    # Iterate through all rows in the worksheet
+    for row in ws.iter_rows(min_row=1):
+        if iter<skipCount:
+            iter+=1
+            continue
+        name_cell = row[0].value
+        email_cell = row[1].value
+        name_to_email[name_cell] = email_cell#should access the email, may need to change
+    set_names(name_to_email)
+    return name_to_email
+    
 
 def set_names(names):
     global stored_names
