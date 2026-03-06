@@ -1,6 +1,7 @@
 #imports, name them, track dependencies
 import tkinter as tk
 from tkinter import messagebox
+from tkcalendar import DateEntry
 from openpyxl import Workbook
 from openpyxl import load_workbook
 import os
@@ -8,6 +9,7 @@ import os
 base_dir = os.path.dirname(os.path.abspath(__file__))
 file_path = os.path.join(base_dir, "Test.xlsx")
 stored_names = None
+due_dates = ["not defined", "not defined"]
 
 #main class
 class App(tk.Tk):
@@ -98,6 +100,19 @@ class MainPage(tk.Frame):
         selectAll = tk.Button(left_frame, text="Send to All", command=lambda: get_all_names())
         selectAll.pack()
         
+        #Date selection
+        mlabel = tk.Label(left_frame, text="Put due dates in here in order")
+        mlabel.pack()
+        
+        dueDate1 = DateEntry(left_frame, width=10, background='darkblue', foreground='white', borderwidth=2, date_pattern='mm-dd-yyyy')
+        dueDate1.pack()
+        
+        dueDate2 = DateEntry(left_frame, width=10, background='darkblue', foreground='white', borderwidth=2, date_pattern='mm-dd-yyyy')
+        dueDate2.pack()
+        
+        setDates = tk.Button(left_frame, text="Set dates", command=lambda: set_dates(dueDate1,dueDate2))
+        setDates.pack()
+        
         #recipients box
         label = tk.Label(right_frame, text="Recipients")
         label.pack()
@@ -123,6 +138,7 @@ def generate_email(email_type_var, message_space, emails_box):
     message_space.delete("1.0", tk.END)
     emails_box.delete("1.0",tk.END)
     global stored_names
+    global due_dates
     if stored_names is None:
         count_issue()
         return -1
@@ -136,11 +152,13 @@ def generate_email(email_type_var, message_space, emails_box):
     match email_type_var.get():
         case "1":
             email_template = open("MONTHLYSHIFTSIGNUP")
-            month="Define later"
-            date="Define later"
-            date2="Need to make input for date"
+            date=due_dates[0]
+            date2=due_dates[1]
+            month = date.month
+            print(f"{date2}")
             for line in email_template:
                 generated_email+=line
+            generated_email.format(Month=month,Date=date, Date2=date2)
             email_template.close()
         case "2":
             email_template = open("WEEKLYSHIFTREMINDER")
@@ -217,6 +235,12 @@ def get_all_names():
 def set_names(names):
     global stored_names
     stored_names = names
+
+def set_dates(dueDate1,dueDate2):
+    global due_dates
+    due_dates[0] = dueDate1.get_date()
+    due_dates[1] = dueDate2.get_date()
+    
 
 #end main page logic
 #logic for names page
